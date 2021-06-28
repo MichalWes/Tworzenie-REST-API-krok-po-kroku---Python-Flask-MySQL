@@ -2,7 +2,7 @@ from flask import jsonify
 from book_library_app import app
 
 
-@app.route('api/v1/authors', methods=['GET'])
+@app.route('/api/v1/authors', methods=['GET'])
 def get_authors():
     return jsonify({
         'success': True,
@@ -10,7 +10,7 @@ def get_authors():
     })
 
 
-@app.route('api/v1/author/<int:author_id>', methods=['GET'])
+@app.route('/api/v1/author/<int:author_id>', methods=['GET'])
 def get_author(author_id: int):
     return jsonify({
         'success': True,
@@ -18,7 +18,7 @@ def get_author(author_id: int):
     })
 
 
-@app.route('api/v1/authors', methods=['POST'])
+@app.route('/api/v1/authors', methods=['POST'])
 def create_author():
     return jsonify({
         'success': True,
@@ -26,7 +26,7 @@ def create_author():
     }), 201
 
 
-@app.route('api/v1/author/<int:author_id>', methods=['PUT'])
+@app.route('/api/v1/author/<int:author_id>', methods=['PUT'])
 def update_author(author_id: int):
     return jsonify({
         'success': True,
@@ -34,7 +34,7 @@ def update_author(author_id: int):
     })
 
 
-@app.route('api/v1/author/<int:author_id>', methods=['DELETE'])
+@app.route('/api/v1/author/<int:author_id>', methods=['DELETE'])
 def delete_author(author_id: int):
     return jsonify({
         'success': True,
