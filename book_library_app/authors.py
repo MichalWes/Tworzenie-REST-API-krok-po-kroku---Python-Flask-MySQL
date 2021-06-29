@@ -10,7 +10,7 @@ def get_authors():
     })
 
 
-@app.route('/api/v1/author/<int:author_id>', methods=['GET'])
+@app.route('/api/v1/authors/<int:author_id>', methods=['GET'])
 def get_author(author_id: int):
     return jsonify({
         'success': True,
@@ -26,7 +26,7 @@ def create_author():
     }), 201
 
 
-@app.route('/api/v1/author/<int:author_id>', methods=['PUT'])
+@app.route('/api/v1/authors/<int:author_id>', methods=['PUT'])
 def update_author(author_id: int):
     return jsonify({
         'success': True,
@@ -34,7 +34,7 @@ def update_author(author_id: int):
     })
 
 
-@app.route('/api/v1/author/<int:author_id>', methods=['DELETE'])
+@app.route('/api/v1/authors/<int:author_id>', methods=['DELETE'])
 def delete_author(author_id: int):
     return jsonify({
         'success': True,
