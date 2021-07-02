@@ -16,19 +16,28 @@ def db_manage():
 def add_data():
     """Add sample data to the database
     """
-    authors_path = Path(__file__).parent / 'samples' / 'authors.json'
-    with open(authors_path) as file:
-        data_json = json.load(file)
-    for item in data_json:
-        item['birth_date'] = datetime.strptime(
-            item['birth_date'], '%d-%m-%Y').date()
-        author = Author(**item)
-        db.session.add(author)
-    db.session.commit
+    try:
+        authors_path = Path(__file__).parent / 'samples' / 'authors.json'
+        with open(authors_path) as file:
+            data_json = json.load(file)
+        for item in data_json:
+            item['birth_date'] = datetime.strptime(
+                item['birth_date'], '%d-%m-%Y').date()
+            author = Author(**item)
+            db.session.add(author)
+        db.session.commit()
+        print('Data has been successfully added to the database')
+    except Exception as exc:
+        print("Unexpected error: {}".format(exc))
 
 
 @db_manage.command()
 def remove_data():
     """Remove all data from the database
     """
-    pass
+    try:
+        db.session.execute('TRUNCATE TABLE authors')
+        db.session.commit()
+        print('Data has been successfully removed from the database')
+    except Exception as exc:
+        print("Unexpected error: {}".format(exc))
