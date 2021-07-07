@@ -1,4 +1,4 @@
-from flask.json import dump
+from flask_sqlalchemy import BaseQuery
 from book_library_app import db
 from datetime import datetime
 from marshmallow import Schema, fields, validate, validates, ValidationError
@@ -13,6 +13,30 @@ class Author(db.Model):
 
     def __repr__(self):
         return f'<{self.__class__.__name__}>:{self.first_name}{self.last_name}'
+
+    @staticmethod
+    def get_schema_args(fields: str) -> dict:
+        schema_args = {'many': True}
+        if fields:
+            schema_args['only'] = [field for field in fields.split(
+                ',') if field in Author.__table__.columns]
+        return schema_args
+
+    @staticmethod
+    def apply_order(query: BaseQuery, sort_keys: str) -> BaseQuery:
+        if sort_keys:
+            for key in sort_keys.split(','):
+                desc = False
+                print(key)
+                if key.startswith('-'):
+                    key = key[1:]
+                    desc = True
+                column_attr = getattr(Author, key, None)
+                print(column_attr)
+                if column_attr is not None:
+                    query = query.order_by(
+                        column_attr.desc()) if desc else query.order_by(column_attr)
+        return query
 
 
 class AuthorSchema(Schema):
