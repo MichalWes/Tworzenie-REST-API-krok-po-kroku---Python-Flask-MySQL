@@ -1,7 +1,13 @@
+import re
 from flask_sqlalchemy import BaseQuery
+from sqlalchemy.orm.attributes import InstrumentedAttribute
+from sqlalchemy.sql.expression import BinaryExpression
 from book_library_app import db
 from datetime import datetime
 from marshmallow import Schema, fields, validate, validates, ValidationError
+from werkzeug.datastructures import ImmutableDict
+
+COMPARISON_OPERATORS_RE = re.compile(r'(.*)\[(gte|gt|lte|lt)')
 
 
 class Author(db.Model):
@@ -27,15 +33,52 @@ class Author(db.Model):
         if sort_keys:
             for key in sort_keys.split(','):
                 desc = False
-                print(key)
                 if key.startswith('-'):
                     key = key[1:]
                     desc = True
                 column_attr = getattr(Author, key, None)
-                print(column_attr)
                 if column_attr is not None:
                     query = query.order_by(
                         column_attr.desc()) if desc else query.order_by(column_attr)
+        return query
+
+    @staticmethod
+    def get_filter_argument(column_name: InstrumentedAttribute, value: str, operator: str) -> BinaryExpression:
+        operator_mapping = {
+            '==': column_name == value,
+            'gte': column_name >= value,
+            'gt': column_name > value,
+            'lte': column_name <= value,
+            'lt': column_name < value
+        }
+        print(operator_mapping[operator])
+        return operator_mapping[operator]
+
+    @staticmethod
+    def apply_filter(query: BaseQuery, params: ImmutableDict) -> BaseQuery:
+        print(params)
+        for param, value in params.items():
+            if param not in {'fields', 'sort'}:
+                operator = '=='
+                match = COMPARISON_OPERATORS_RE.match(param)
+                print(match)
+                if match is not None:
+                    param, operator = match.groups()
+                print(param, operator)
+                column_attr = getattr(Author, param, None)
+                print(column_attr)
+                if column_attr is not None:
+                    if param == 'birth_date':
+                        try:
+                            value = datetime.strptime(value, '%d-%m-%Y').date()
+                            print(value)
+                        except ValueError:
+                            continue
+                    filter_argument = Author.get_filter_argument(
+                        column_attr, value, operator)
+                    print(filter_argument)
+                    query = query.filter(filter_argument)
+                    print(query)
         return query
 
 
