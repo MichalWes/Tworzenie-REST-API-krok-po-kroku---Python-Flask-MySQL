@@ -1,1 +1,1 @@
-from book_library_app import app
+from book_library_app import authors_bp

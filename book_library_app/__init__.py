@@ -3,11 +3,11 @@ from config import Config
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
-app = Flask(__name__)
-app.config.from_object(Config)
+authors_bp = Flask(__name__)
+authors_bp.config.from_object(Config)
 
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
+db = SQLAlchemy(authors_bp)
+migrate = Migrate(authors_bp, db)
 
 from book_library_app import authors
 from book_library_app import models
