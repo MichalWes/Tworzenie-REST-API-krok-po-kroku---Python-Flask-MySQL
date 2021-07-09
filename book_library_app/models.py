@@ -1,11 +1,14 @@
 import re
+from flask import request, url_for
 from flask_sqlalchemy import BaseQuery
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.sql.expression import BinaryExpression
-from book_library_app import db
+from typing import Tuple
 from datetime import datetime
 from marshmallow import Schema, fields, validate, validates, ValidationError
-from werkzeug.datastructures import ImmutableDict
+from book_library_app import db
+
+from book_library_app import Config
 
 COMPARISON_OPERATORS_RE = re.compile(r'(.*)\[(gte|gt|lte|lt)')
 
@@ -51,35 +54,50 @@ class Author(db.Model):
             'lte': column_name <= value,
             'lt': column_name < value
         }
-        print(operator_mapping[operator])
         return operator_mapping[operator]
 
     @staticmethod
-    def apply_filter(query: BaseQuery, params: ImmutableDict) -> BaseQuery:
-        print(params)
-        for param, value in params.items():
-            if param not in {'fields', 'sort'}:
+    def apply_filter(query: BaseQuery) -> BaseQuery:
+        for param, value in request.args.items():
+            if param not in {'fields', 'sort', 'page', 'limit'}:
                 operator = '=='
                 match = COMPARISON_OPERATORS_RE.match(param)
-                print(match)
                 if match is not None:
                     param, operator = match.groups()
-                print(param, operator)
                 column_attr = getattr(Author, param, None)
-                print(column_attr)
                 if column_attr is not None:
                     if param == 'birth_date':
                         try:
                             value = datetime.strptime(value, '%d-%m-%Y').date()
-                            print(value)
                         except ValueError:
                             continue
                     filter_argument = Author.get_filter_argument(
                         column_attr, value, operator)
-                    print(filter_argument)
                     query = query.filter(filter_argument)
-                    print(query)
         return query
+
+    @staticmethod
+    def get_pagination(query: BaseQuery) -> Tuple[list, dict]:
+        page = request.args.get('page', 1, type=int)
+        limit = request.args.get('limit', Config.PER_PAGE, type=int)
+        params = {key: value for key, value in request.args.items()
+                  if key != 'page'}
+        paginate_obj = query.paginate(page, limit, False)
+        pagination = {
+            'total_pages': paginate_obj.pages,
+            'total_records': paginate_obj.total,
+            'current page': url_for('get_authors', page=page, **params)
+        }
+
+        if paginate_obj.has_next:
+            pagination['next_page'] = url_for(
+                'get_authors', page=page + 1, **params)
+
+        if paginate_obj.has_prev:
+            pagination['previous_page'] = url_for(
+                'get_authors', page=page - 1, **params)
+
+        return paginate_obj.items, pagination
 
 
 class AuthorSchema(Schema):
