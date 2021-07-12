@@ -1,6 +1,6 @@
 from flask import Response, jsonify
 from book_library_app import db
-from book_library_app.errors import errors
+from book_library_app.errors import errors_bp
 
 
 class ErrorResponse:

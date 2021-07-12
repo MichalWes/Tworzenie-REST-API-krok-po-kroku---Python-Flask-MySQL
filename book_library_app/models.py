@@ -86,12 +86,12 @@ class Author(db.Model):
         pagination = {
             'total_pages': paginate_obj.pages,
             'total_records': paginate_obj.total,
-            'current page': url_for('authors.get_authorsget_authors', page=page, **params)
+            'current page': url_for('authors.get_authors', page=page, **params)
         }
 
         if paginate_obj.has_next:
             pagination['next_page'] = url_for(
-                'authors.get_authorsget_authors', page=page + 1, **params)
+                'authors.get_authors', page=page + 1, **params)
 
         if paginate_obj.has_prev:
             pagination['previous_page'] = url_for(
